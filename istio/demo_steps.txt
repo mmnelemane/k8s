@@ -1,0 +1,50 @@
+# Lists steps and instructions for ISTIO Demo installation
+# Initial focus is on setup instructions based on minikube cluster
+
+1. Ensure no kubernetes artifacts are installed on the host so that conflicts are avoided
+
+2. Delete if any existing minikube cluster is running
+
+`minikube stop`
+`minikube delete`
+
+3. Setup minikube cluster
+
+`minikube start --memory=16384 --cpus=4 --kubernetes-version=v1.14.2 --vm-driver=kvm2`
+
+4. Install kubectl
+
+`curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kubectl`
+
+`chmod +x ./kubectl`
+
+`sudo mv ./kubectl /usr/local/bin/kubectl`
+
+5. Verify kubectl version (as v1.14.2)
+
+`kubectl version --client`
+
+6. Download Istio (v1.4.4)
+
+`curl -L https://istio.io/downloadIstio | sh -`
+
+`cd istio-1.4.4`
+
+`export PATH=$PWD/bin:$PATH`
+
+7. Install Istio demo
+
+`istioctl manifest apply --set profile=demo`
+
+# To verify :
+
+```
+  $ istioctl profile list 
+  Istio configuration profiles:
+    default
+    demo
+    minimal
+    remote
+    sds
+```
+
