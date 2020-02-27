@@ -1,7 +1,7 @@
-# This file highlights security concepts for Istio and lists steps for installation and operation with Istio
-# Tha attempt is to be able to demonstrate key security features of Istio.
+This file highlights security concepts for Istio and lists steps for installation and operation with Istio
+The attempt is to be able to demonstrate key security features of Istio.
 
-** Setting up Security for Istio
+## Setting up Security for Istio
 
 ```
 $ istioctl manifest apply --set profile=demo --set values.global.mtls.auto=true --set values.global.mtls.enabled=false
@@ -36,7 +36,7 @@ $ istioctl manifest apply --set profile=demo --set values.global.mtls.auto=true 
 ✔ Installation complete
 ```
 
-** An Example
+## An Example
 
 
 * Full
@@ -57,7 +57,7 @@ service/sleep created
 deployment.apps/sleep created
 ```
 
-* Partial
+##Partial
 
 ```
 $ kubectl create ns partial
@@ -95,7 +95,7 @@ $ cat << EOF | kubectl apply -n partial -f -
 deployment.apps/httpbin-nosidecar created
 ```
 
-* Legacy
+## Legacy
 
 ```
 $  kubectl create ns legacy
@@ -112,7 +112,7 @@ service/sleep created
 deployment.apps/sleep created
 ```
 
-* kube injection
+## kube injection
 
 ```
 $ kubectl apply -f <(istioctl kube-inject -f samples/sleep/sleep.yaml) -n full
@@ -126,7 +126,7 @@ service/sleep unchanged
 deployment.apps/sleep unchanged
 ```
 
-* Verify setup
+## Verify setup
 
 ```
 $ kubectl get pods -n full
@@ -145,7 +145,7 @@ httpbin-64776bf78d-cd9ll   1/1     Running   0          3m15s
 sleep-666475687f-tc4cr     1/1     Running   0          3m3s
 ```
 
-*  Check default policies
+## Check default policies
 
 ```
 $ kubectl get policies.authentication.istio.io --all-namespaces
