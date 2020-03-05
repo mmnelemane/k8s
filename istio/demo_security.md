@@ -159,10 +159,11 @@ $ kubectl get meshpolicies -o yaml | grep ' mode'
 
 
 #############################################################
-04.03.2020
+# Verifying Security features using mTLS on istio
 #############################################################
 
-mmohanistio-1.4.5 (master)> istioctl manifest apply --set values.global.mtls.enabled=true,values.security.selfSigned=false
+```
+$ istioctl manifest apply --set values.global.mtls.enabled=true,values.security.selfSigned=false
 - Applying manifest for component Base...
 ✔ Finished applying manifest for component Base.
 - Applying manifest for component Citadel...
@@ -192,14 +193,16 @@ mmohanistio-1.4.5 (master)> istioctl manifest apply --set values.global.mtls.ena
 
 
 ✔ Installation complete
+```
 
-mmohanistio-1.4.5 (master)> kubectl delete secret istio.default
+```
+$ kubectl delete secret istio.default
 secret "istio.default" deleted
 
-mmohanistio-1.4.5 (master)> kubectl label namespace default istio-injection=enabled
+$ kubectl label namespace default istio-injection=enabled
 namespace/default labeled
 
-mmohanistio-1.4.5 (master)> kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+$ kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
 service/details created
 serviceaccount/bookinfo-details created
 deployment.apps/details-v1 created
@@ -215,7 +218,7 @@ service/productpage created
 serviceaccount/bookinfo-productpage created
 deployment.apps/productpage-v1 created
 
-mmohanistio-1.4.5 (master)> kubectl get services
+$ kubectl get services
 NAME          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 details       ClusterIP   10.102.23.249    <none>        9080/TCP   20s
 kubernetes    ClusterIP   10.96.0.1        <none>        443/TCP    14d
@@ -223,7 +226,7 @@ productpage   ClusterIP   10.110.128.226   <none>        9080/TCP   14s
 ratings       ClusterIP   10.109.97.209    <none>        9080/TCP   19s
 reviews       ClusterIP   10.102.95.183    <none>        9080/TCP   18s
 
-mmohanistio-1.4.5 (master)> kubectl get pods
+$ kubectl get pods
 NAME                             READY   STATUS            RESTARTS   AGE
 details-v1-c5b5f496d-jflzm       0/2     PodInitializing   0          25s
 productpage-v1-c7765c886-jsx8w   0/2     PodInitializing   0          17s
@@ -232,49 +235,57 @@ reviews-v1-75b979578c-wz2ff      0/2     PodInitializing   0          22s
 reviews-v2-597bf96c8f-jhsjc      0/2     PodInitializing   0          22s
 reviews-v3-54c6c64795-p6tcq      0/2     PodInitializing   0          21s
 
-mmohanistio-1.4.5 (master)> kubectl exec -it $(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}') -c ratings -- curl productpage:9080/productpage | grep -o "<title>.*</title>"
+$ kubectl exec -it $(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}') -c ratings -- curl productpage:9080/productpage | grep -o "<title>.*</title>"
 <title>Simple Bookstore App</title>
 
-mmohanistio-1.4.5 (master)> kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+$ kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
 gateway.networking.istio.io/bookinfo-gateway created
 virtualservice.networking.istio.io/bookinfo created
+```
 
-mmohanistio-1.4.5 (master)> kubectl get gateway
+```
+$ kubectl get gateway
 NAME               AGE
 bookinfo-gateway   6s
 
-mmohanistio-1.4.5 (master)> kubectl get svc istio-ingressgateway -n istio-system
+$ kubectl get svc istio-ingressgateway -n istio-system
 NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                                                                                                                      AGE
 istio-ingressgateway   LoadBalancer   10.111.91.69   <pending>     15020:31172/TCP,80:30857/TCP,443:32432/TCP,15029:32247/TCP,15030:30302/TCP,15031:31817/TCP,15032:30876/TCP,15443:30942/TCP   14d
-mmohanistio-1.4.5 (master)> export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-mmohanistio-1.4.5 (master)> echo $INGRESS_HOST
 
-mmohanistio-1.4.5 (master)> export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
-mmohanistio-1.4.5 (master)> echo $INGRESS_PORT
+$ export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+$ echo $INGRESS_PORT
 30857
-mmohanistio-1.4.5 (master)> export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-mmohanistio-1.4.5 (master)> export INGRESS_HOST=$(minikube ip)
+$ export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+$ export INGRESS_HOST=$(minikube ip)
 
-mmohanistio-1.4.5 (master)> minikube ip
+$ minikube ip
 192.168.39.147
-mmohanistio-1.4.5 (master)>
-mmohanistio-1.4.5 (master)> echo $INGRESS_HOST
-192.168.39.147
-mmohanistio-1.4.5 (master)> export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 
-mmohanistio-1.4.5 (master)> echo $GATEWAY_URL
+$ echo $INGRESS_HOST
+192.168.39.147
+
+$ export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+
+$ echo $GATEWAY_URL
 192.168.39.147:30857
+```
 
-mmohanistio-1.4.5 (master)> curl -s http://${GATEWAY_URL}/productpage | grep -o "<title>.*</title>"
+```
+$ curl -s http://${GATEWAY_URL}/productpage | grep -o "<title>.*</title>"
 <title>Simple Bookstore App</title>
+```
 
-mmohanistio-1.4.5 (master)> kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+```
+$ kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
 destinationrule.networking.istio.io/productpage created
 destinationrule.networking.istio.io/reviews created
 destinationrule.networking.istio.io/ratings created
 destinationrule.networking.istio.io/details created
+```
 
-mmohanistio-1.4.5 (master)> kubectl get destinationrules -o yaml
+
+```
+$ kubectl get destinationrules -o yaml
 apiVersion: v1
 items:
 - apiVersion: networking.istio.io/v1alpha3
@@ -375,12 +386,17 @@ kind: List
 metadata:
   resourceVersion: ""
   selfLink: ""
+```
 
-mmohanistio-1.4.5 (master)> kubectl get policies.authentication.istio.io --all-namespaces
+
+```
+$ kubectl get policies.authentication.istio.io --all-namespaces
 NAMESPACE      NAME                          AGE
 istio-system   grafana-ports-mtls-disabled   13d
+```
 
-mmohanistio-1.4.5 (master)> istioctl manifest apply --set profile=demo --set values.global.mtls.auto=true --set values.global.mtls.enabled=false
+```
+$ istioctl manifest apply --set profile=demo --set values.global.mtls.auto=true --set values.global.mtls.enabled=false
 - Applying manifest for component Base...
 ✔ Finished applying manifest for component Base.
 - Applying manifest for component Prometheus...
@@ -410,8 +426,11 @@ mmohanistio-1.4.5 (master)> istioctl manifest apply --set profile=demo --set val
 
 
 ✔ Installation complete
+```
 
-mmohanistio-1.4.5 (master)> kubectl get destinationrules.networking.istio.io --all-namespaces -o yaml | grep "host:"
+
+```
+$ kubectl get destinationrules.networking.istio.io --all-namespaces -o yaml | grep "host:"
     host: details
     host: productpage
     host: ratings
@@ -422,11 +441,14 @@ mmohanistio-1.4.5 (master)> kubectl get destinationrules.networking.istio.io --a
     host: istio-policy.istio-system.svc.cluster.local
     host: istio-telemetry.istio-system.svc.cluster.local
 
-mmohanistio-1.4.5 (master)> kubectl exec $(kubectl get pod -l app=sleep -n full -o jsonpath={.items..metadata.name}) -c sleep -n full -- curl http://httpbin.full:8000/headers  -s  -w "response %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$'
+$ kubectl exec $(kubectl get pod -l app=sleep -n full -o jsonpath={.items..metadata.name}) -c sleep -n full -- curl http://httpbin.full:8000/headers  -s  -w "response %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$'
 URI=spiffe://cluster.local/ns/full/sa/sleep
 response 200
+```
 
-mmohanistio-1.4.5 (master)> for from in "full" "legacy"; do for to in "full" "partial" "legacy"; do echo "sleep.${from} to httpbin.${to}";kubectl exec $(kubectl get pod -l app=sleep -n ${from} -o jsonpath={.items..metadata.name}) -c sleep -n ${from} -- curl http://httpbin.${to}:8000/headers  -s  -w "response code: %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done; done
+
+```
+$ for from in "full" "legacy"; do for to in "full" "partial" "legacy"; do echo "sleep.${from} to httpbin.${to}";kubectl exec $(kubectl get pod -l app=sleep -n ${from} -o jsonpath={.items..metadata.name}) -c sleep -n ${from} -- curl http://httpbin.${to}:8000/headers  -s  -w "response code: %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done; done
 sleep.full to httpbin.full
 URI=spiffe://cluster.local/ns/full/sa/sleep
 response code: 200
@@ -441,8 +463,11 @@ response code: 200
 response code: 200
 \nsleep.legacy to httpbin.legacy
 response code: 200
+```
 
-mmohanistio-1.4.5 (master)> for i in `seq 1 10`; do kubectl exec $(kubectl get pod -l app=sleep -n full -o jsonpath={.items..metadata.name}) -c sleep -nfull  -- curl http://httpbin.partial:8000/headers  -s  -w "response code: %{http_code}e}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done
+
+```
+$ for i in `seq 1 10`; do kubectl exec $(kubectl get pod -l app=sleep -n full -o jsonpath={.items..metadata.name}) -c sleep -nfull  -- curl http://httpbin.partial:8000/headers  -s  -w "response code: %{http_code}e}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done
 URI=spiffe://cluster.local/ns/full/sa/sleep
 response code: 200
 \nURI=spiffe://cluster.local/ns/full/sa/sleep
@@ -463,9 +488,12 @@ response code: 200
 response code: 200
 \nURI=spiffe://cluster.local/ns/full/sa/sleep
 response code: 200
-\nmmohanistio-1.4.5 (master)>
+\n
+```
 
-mmohanistio-1.4.5 (master)> cat <<EOF | kubectl apply -n full -f -
+
+```
+$ cat <<EOF | kubectl apply -n full -f -
 > apiVersion: "authentication.istio.io/v1alpha1"
 > kind: "Policy"
 > metadata:
@@ -477,8 +505,11 @@ mmohanistio-1.4.5 (master)> cat <<EOF | kubectl apply -n full -f -
 >   - mtls: {}
 > EOF
 policy.authentication.istio.io/httpbin created
+```
 
-mmohanistio-1.4.5 (master)> for from in "full" "legacy"; do for to in "full" "partial" "legacy"; do echo "sleep.${from} to httpbin.${to}";kubectl exec $(kubectl get pod -l app=sleep -n ${from} -o jsonpath={.items..metadata.name}) -c sleep -n ${from} -- curl http://httpbin.${to}:8000/headers  -s  -w "response code: %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done; done
+
+```
+$ for from in "full" "legacy"; do for to in "full" "partial" "legacy"; do echo "sleep.${from} to httpbin.${to}";kubectl exec $(kubectl get pod -l app=sleep -n ${from} -o jsonpath={.items..metadata.name}) -c sleep -n ${from} -- curl http://httpbin.${to}:8000/headers  -s  -w "response code: %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done; done
 sleep.full to httpbin.full
 URI=spiffe://cluster.local/ns/full/sa/sleep
 response code: 200
@@ -495,8 +526,10 @@ response code: 200
 \nsleep.legacy to httpbin.legacy
 response code: 200
 \n
+```
 
-mmohanistio-1.4.5 (master)> cat <<EOF | kubectl apply -n full -f -
+```
+$ cat <<EOF | kubectl apply -n full -f -
 > apiVersion: "authentication.istio.io/v1alpha1"
 > kind: "Policy"
 > metadata:
@@ -506,8 +539,10 @@ mmohanistio-1.4.5 (master)> cat <<EOF | kubectl apply -n full -f -
 >   - name: httpbin
 > EOF
 policy.authentication.istio.io/httpbin configured
+```
 
-mmohanistio-1.4.5 (master)> for from in "full" "legacy"; do for to in "full" "partial" "legacy"; do echo "sleep.${from} to httpbin.${to}";kubectl exec $(kubectl get pod -l app=sleep -n ${from} -o jsonpath={.items..metadata.name}) -c sleep -n ${from} -- curl http://httpbin.${to}:8000/headers  -s  -w "response code: %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done; done
+```
+$ for from in "full" "legacy"; do for to in "full" "partial" "legacy"; do echo "sleep.${from} to httpbin.${to}";kubectl exec $(kubectl get pod -l app=sleep -n ${from} -o jsonpath={.items..metadata.name}) -c sleep -n ${from} -- curl http://httpbin.${to}:8000/headers  -s  -w "response code: %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done; done
 sleep.full to httpbin.full
 URI=spiffe://cluster.local/ns/full/sa/sleep
 response code: 200
@@ -523,8 +558,10 @@ response code: 200
 \nsleep.legacy to httpbin.legacy
 response code: 200
 \n
+```
 
-mmohanistio-1.4.5 (master)> cat <<EOF | kubectl apply -n full -f -
+```
+$ cat <<EOF | kubectl apply -n full -f -
 > apiVersion: "networking.istio.io/v1alpha3"
 > kind: "DestinationRule"
 > metadata:
@@ -536,8 +573,10 @@ mmohanistio-1.4.5 (master)> cat <<EOF | kubectl apply -n full -f -
 >       mode: ISTIO_MUTUAL
 > EOF
 destinationrule.networking.istio.io/httpbin-full-mtls created
+```
 
-mmohanistio-1.4.5 (master)> for from in "full" "legacy"; do for to in "full" "partial" "legacy"; do echo "sleep.${from} to httpbin.${to}";kubectl exec $(kubectl get pod -l app=sleep -n ${from} -o jsonpath={.items..metadata.name}) -c sleep -n ${from} -- curl http://httpbin.${to}:8000/headers  -s  -w "response code: %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done; done
+```
+$ for from in "full" "legacy"; do for to in "full" "partial" "legacy"; do echo "sleep.${from} to httpbin.${to}";kubectl exec $(kubectl get pod -l app=sleep -n ${from} -o jsonpath={.items..metadata.name}) -c sleep -n ${from} -- curl http://httpbin.${to}:8000/headers  -s  -w "response code: %{http_code}\n" | egrep -o 'URI\=spiffe.*sa/[a-z]*|response.*$';  echo -n "\n"; done; done
 sleep.full to httpbin.full
 response code: 503
 \nsleep.full to httpbin.partial
@@ -551,4 +590,4 @@ response code: 200
 response code: 200
 \nsleep.legacy to httpbin.legacy
 response code: 200
-
+```
