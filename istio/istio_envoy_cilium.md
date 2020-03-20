@@ -19,4 +19,15 @@ Ingress -> Config -> Check & Report -> Secure -> Egress
 * Export Telemetry from Cilium to Istio
 * Offload Mixer functionality in Cilium thereby reducing proxy-related latency.
 
+# Few useful links:
+
+* Blogs about Cilium and Istio: 
+  - https://cilium.io/blog/istio/
+  - https://cilium.io/blog/2018/08/07/istio-10-cilium/
+
+* A paper on kTLS  (accelerating service mesh security): 
+  - https://netdevconf.info/1.2/papers/ktls.pdf
+    
+* Minikube setup for Cilium as policy offload for Istio:
+  - https://docs.cilium.io/en/stable/gettingstarted/istio/
 
